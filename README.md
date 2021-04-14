@@ -12,9 +12,10 @@ This script is using following packages:
 - email <br>
 
 
-All packages should be pre installed
+All packages should be pre installed.
 To download the scripts enter `git clone https://github.com/dnlwttnbrg/automatic-email-forward.git` into the console.
 Execute the script by entering `python3 automatic_email_forward.py`. On a linux server type `python3 automatic_email_forward.py &` to run the script in the background.
+If you update the script, make sure you backuped your config-file, because it will be overwritten.
 
 
 
