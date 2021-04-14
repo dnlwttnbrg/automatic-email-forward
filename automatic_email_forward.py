@@ -7,6 +7,7 @@ from email.mime.multipart import MIMEMultipart
 import logging
 from languages.ge import ge
 from languages.en import en
+from datetime import datetime
 
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -14,6 +15,8 @@ config.read('config.ini')
 #get language infos
 selected_language = config['General']['language']
 languages = {"german": ge, "english": en}
+dateTimeObj = datetime.now()
+time = dateTimeObj.strftime("%d-%b-%Y %H:%M:%S")
 
 def main():
     logging.basicConfig(filename="logfile.log", level=logging.INFO)
@@ -24,7 +27,12 @@ def main():
 
 def getMail(config):
     #log into server
-    server = imaplib.IMAP4_SSL(config['RECEIVE EMAIL']['host'], config['RECEIVE EMAIL']['port'])
+    try:
+        server = imaplib.IMAP4_SSL(config['RECEIVE EMAIL']['host'], config['RECEIVE EMAIL']['port'])
+    except OSError as e:
+        logging.error(time + ': ' + str(e))
+        return
+
     try:
         server.login(config['RECEIVE EMAIL']['name'], config['RECEIVE EMAIL']['password'])
     except server.error as e:
@@ -32,10 +40,11 @@ def getMail(config):
             print(languages[selected_language]["password incorrect"])
             return
         if 'LOGIN Server error' in str(e):
-            logging.error('LOGIN Server error')
+            logging.error(time +': LOGIN Server error')
             return
         else:
-            raise
+            logging.error(time + ': ' + str(e))
+            return
 
     #select mailbox
     mailbox = config['RECEIVE EMAIL']['mailbox']
@@ -69,7 +78,7 @@ def sentMail(message, config, sender, subject):
     smtp.login(config['SEND EMAIL']['name'], config['SEND EMAIL']['password'])
     try:
         smtp.sendmail('prispapierabwi@aol.com', 'abraham@prismapapier.de', message.as_string())
-        logging.info(languages[selected_language]["email forwardet"])
+        logging.info(time +': ' + languages[selected_language]["email forwardet"])
     except:
         #If the email is blocked by the receiver, a email is send, that something was blocked
         spam_mail = MIMEMultipart("alternative")
@@ -82,7 +91,7 @@ def sentMail(message, config, sender, subject):
         spam_mail.attach(part1)
 
         smtp.sendmail('prispapierabwi@aol.com', 'abraham@prismapapier.de', spam_mail.as_string())
-        logging.info(languages[selected_language]["spam forwardet"])
+        logging.info(time +': ' + languages[selected_language]["spam forwardet"])
     smtp.quit()
 
 
