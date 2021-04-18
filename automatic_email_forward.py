@@ -52,10 +52,17 @@ def getMail(config):
 
     #loop through all unread emails
     typ, data = server.search(None, 'UNSEEN')
-    for num in data[0].split():
-        typ, data = server.fetch(num, '(RFC822)')
-        email_data = data[0][1]
-        modifyMail(email_data, config)
+    try:
+        for num in data[0].split():
+            typ, data = server.fetch(num, '(RFC822)')
+            email_data = data[0][1]
+            modifyMail(email_data, config)
+    except server.error as e:
+        logging.error(time + ': ' + str(e))
+        return
+    except OSError as e:
+        logging.error(time + ': ' + str(e))
+        return
     server.close()
     server.logout()
 
